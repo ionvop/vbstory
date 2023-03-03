@@ -3,7 +3,7 @@ dim objShell, objFile, objExcel
 set objShell = CreateObject("wscript.shell")
 set objFile = CreateObject("Scripting.FileSystemObject")
 set objExcel = CreateObject("Excel.Application") 
-dim directory, posX, posY, resX, resY, posZ, configData, mapTrees, mapPos0, mapPos1, mapLogoff, mapDots, mapNote1, mapLock1, mapHack
+dim directory, posX, posY, resX, resY, posZ, configData, mapTrees, mapPos0, mapPos1, mapPos2, mapPos1b, mapLogoff, mapDots, mapNote1, mapLock1, mapHack
 
 sub Main()
     directory = objFile.GetParentFolderName(wscript.ScriptFullName)
@@ -21,6 +21,7 @@ end sub
 
 sub Initialize()
     configData = objFile.OpenTextFile(directory &  "\config.txt").ReadAll()
+    configData = replace(configData, "_" & vbcrlf, "")
     resX = GetKeyValue(configData, "resX")
     resX = cint(resX)
     resY = GetKeyValue(configData, "resY")
@@ -43,11 +44,17 @@ sub LoadMap()
         map = "pos0"
     case 1
         map = "pos1"
+    case 2
+        map = "pos2"
+    case 999
+        map = "pos999"
     end select
 
     mapTrees = GetKeyValue(configData, map)
     mapPos1 = GetKeyValue(configData, map)
     mapPos0 = GetKeyValue(configData, map)
+    mapPos2 = GetKeyValue(configData, map)
+    mapPos1b = GetKeyValue(configData, map)
     mapLogoff = GetKeyValue(configData, map)
     mapDots = GetKeyValue(configData, map)
     mapNote1 = GetKeyValue(configData, map)
@@ -56,11 +63,13 @@ sub LoadMap()
     mapTrees = ParseMap(mapTrees, "trees")
     mapPos1 = ParseMap(mapPos1, "pos1")
     mapPos0 = ParseMap(mapPos0, "pos0")
+    mapPos2 = ParseMap(mapPos2, "pos2")
     mapLogoff = ParseMap(mapLogoff, "logoff")
     mapDots = ParseMap(mapDots, "dots")
     mapNote1 = ParseMap(mapNote1, "note1")
     mapLock1 = ParseMap(mapLock1, "lock1")
     mapHack = ParseMap(mapHack, "hack")
+    mapPos1b = ParseMap(mapPos1b, "pos1b")
 end sub
 
 sub Render()
@@ -159,6 +168,24 @@ function CheckCollision(checkX, checkY)
         exit function
     end if
 
+    if ArrayContainsValue(mapPos2, pos) then
+        CheckCollision = true
+        posX = checkX
+        posY = 1
+        posZ = 2
+        LoadMap()
+        exit function
+    end if
+
+    if ArrayContainsValue(mapPos1b, pos) then
+        CheckCollision = true
+        posX = checkX
+        posY = 5
+        posZ = 1
+        LoadMap()
+        exit function
+    end if
+
     posX = checkX
     posY = checkY
     CheckCollision = true
@@ -174,7 +201,7 @@ sub ClearFolder()
 end sub
 
 sub CheckInput()
-    dim res
+    dim input
 
     do
         if isKeyPressed(87) then
@@ -202,11 +229,22 @@ sub CheckInput()
         end if
 
         if isKeyPressed(27) then
-            res = msgbox("Are you sure you want to quit?", 32 + 4)
+            input = msgbox("Are you sure you want to quit?", 32 + 4)
 
-            if res = 6 then
-                ClearFolder()
+            if input = 6 then
+                'ClearFolder()
                 wscript.Quit
+            end if
+        end if
+
+        if isKeyPressed(84) then
+            input = inputbox("Where do you want to teleport?")
+            'posX = eval(input) mod resX
+            'posY = int(eval(input) / resX)
+            wscript.Sleep(100)
+            
+            if CheckCollision(eval(input) mod resX, int(eval(input) / resX)) then
+                exit sub
             end if
         end if
 
