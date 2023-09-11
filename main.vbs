@@ -3,7 +3,7 @@ dim objShell, objFile, objExcel
 set objShell = CreateObject("wscript.shell")
 set objFile = CreateObject("Scripting.FileSystemObject")
 set objExcel = CreateObject("Excel.Application") 
-dim directory, posX, posY, resX, resY, posZ, configData, mapTrees, mapPos0, mapPos1, mapPos2, mapPos1b, mapLogoff, mapDots, mapNote1, mapLock1, mapHack
+dim directory, posX, posY, resX, resY, posZ, configData, mapTrees, mapPos0, mapPos1, mapPos2, mapPos1b, mapPos3, mapPos2b, mapLogoff, mapDots, mapNote1, mapLock1, mapHack
 
 sub Main()
     directory = objFile.GetParentFolderName(wscript.ScriptFullName)
@@ -46,6 +46,8 @@ sub LoadMap()
         map = "pos1"
     case 2
         map = "pos2"
+    case 3
+        map = "pos3"
     case 999
         map = "pos999"
     end select
@@ -55,6 +57,8 @@ sub LoadMap()
     mapPos0 = GetKeyValue(configData, map)
     mapPos2 = GetKeyValue(configData, map)
     mapPos1b = GetKeyValue(configData, map)
+    mapPos3 = GetKeyValue(configData, map)
+    mapPos2b = GetKeyValue(configData, map)
     mapLogoff = GetKeyValue(configData, map)
     mapDots = GetKeyValue(configData, map)
     mapNote1 = GetKeyValue(configData, map)
@@ -64,12 +68,15 @@ sub LoadMap()
     mapPos1 = ParseMap(mapPos1, "pos1")
     mapPos0 = ParseMap(mapPos0, "pos0")
     mapPos2 = ParseMap(mapPos2, "pos2")
+    mapPos1b = ParseMap(mapPos1b, "pos1b")
+    mapPos3 = ParseMap(mapPos3, "pos3")
+    mapPos2b = ParseMap(mapPos2b, "pos2b")
     mapLogoff = ParseMap(mapLogoff, "logoff")
     mapDots = ParseMap(mapDots, "dots")
     mapNote1 = ParseMap(mapNote1, "note1")
     mapLock1 = ParseMap(mapLock1, "lock1")
     mapHack = ParseMap(mapHack, "hack")
-    mapPos1b = ParseMap(mapPos1b, "pos1b")
+    
 end sub
 
 sub Render()
@@ -182,6 +189,24 @@ function CheckCollision(checkX, checkY)
         posX = checkX
         posY = 5
         posZ = 1
+        LoadMap()
+        exit function
+    end if
+
+    if ArrayContainsValue(mapPos3, pos) then
+        CheckCollision = true
+        posX = 1
+        posY = checkY
+        posZ = 3
+        LoadMap()
+        exit function
+    end if
+
+    if ArrayContainsValue(mapPos2b, pos) then
+        CheckCollision = true
+        posX = 12
+        posY = checkY
+        posZ = 2
         LoadMap()
         exit function
     end if
